@@ -1,27 +1,178 @@
 # Formal Math Benchmark & Reasoning Evaluator
 
-Formal Math Benchmark & Reasoning Evaluator is a research-oriented evaluation stack for testing frontier LLMs on olympiad-style mathematics while separating answer accuracy from proof validity.
+A model can get the right AIME-style answer for the wrong reason.
 
-The project has two layers:
+This repository is a small but fully runnable research prototype for measuring that gap. It evaluates frontier LLM solutions to olympiad-style math problems, decomposes them into benchmark-aligned reasoning claims, and generates Lean 4 proof obligations so answer correctness and proof validity can be analyzed separately.
 
-1. A runnable Python pipeline for benchmark management, answer extraction, reasoning-step analysis, Lean 4 proof-obligation generation, and reporting.
-2. A Lean 4 scaffold for formally checking selected intermediate claims and reference solutions once Lean is installed locally.
+**Core idea:** answer-only benchmarks hide reasoning failures.  
+**What this repo does:** score answers, score claim-level reasoning coverage, and map formalizable steps into Lean 4 theorems.
 
-The core thesis is simple: a model can produce the correct final answer while still using invalid or unverifiable reasoning. Standard accuracy benchmarks miss that gap.
+## Verification Snapshot
 
-## What This Repo Includes
+- Sample benchmark: 4 competition-style math problems across algebra, number theory, combinatorics, and geometry
+- Evaluation dimensions: `answer_accuracy`, `claim_recall`, `verified_claim_rate`, `unsupported_claims`
+- Formal backend: Lean 4 theorem generation + checked example modules
+- Local build status: Python demo and tests pass; Lean modules compile
 
-- A small curated benchmark of AMC/AIME-style problems across algebra, number theory, combinatorics, and geometry.
-- Structured solution skeletons with explicit claim IDs and proof obligations.
-- A Python evaluator that scores:
-  - final answer correctness
-  - claim coverage
-  - claim consistency against the reference skeleton
-  - formal-verification readiness
-- A Lean 4 code generator that emits theorem stubs and proof placeholders from benchmark data.
-- A sample report showing how answer correctness and formal reasoning validity diverge.
+![Model comparison](docs/images/model_comparison.png)
 
-## Project Structure
+The point of the project is visible even in the seeded demo run: one model reaches `100%` final-answer accuracy, but that does not imply `100%` proof-level coverage or zero unsupported reasoning steps.
+
+## Why This Exists
+
+Most LLM math evaluations collapse everything into final-answer match. That is too weak for reasoning research.
+
+This project is built around a stricter question:
+
+> How often does a model produce a correct answer using a reasoning chain that is incomplete, unsupported, or not formalizable?
+
+That framing maps directly onto current work in:
+
+- formal verification of model reasoning
+- neuro-symbolic evaluation
+- theorem-proving-assisted alignment
+- failure-mode analysis for advanced reasoning systems
+
+## Visual Overview
+
+![Benchmark composition](docs/images/benchmark_composition.png)
+
+The benchmark currently uses a compact, hand-curated dataset so every problem has an explicit solution skeleton and a well-defined set of proof obligations. The goal is not benchmark scale yet; the goal is clean measurement.
+
+## System Design
+
+```mermaid
+flowchart LR
+    A["Benchmark Problems<br/>data/problems.json"] --> B["Reference Solution Skeletons<br/>claim IDs + match terms"]
+    B --> C["Python Evaluator<br/>answer scoring + claim coverage + unsupported-step detection"]
+    A --> D["LLM Responses<br/>sample runs or API-collected outputs"]
+    D --> C
+    B --> E["Lean Generator<br/>proof-obligation emission"]
+    E --> F["Lean 4 Modules<br/>Generated.lean + Examples.lean"]
+    C --> G["Markdown Report<br/>outputs/report.md"]
+    F --> H["Formal Check Boundary<br/>lake build"]
+```
+
+### Layer Responsibilities
+
+- `data/`: benchmark problems and seeded model responses
+- `src/formal_math_benchmark/dataset.py`: typed benchmark loading
+- `src/formal_math_benchmark/evaluation.py`: answer scoring, claim matching, unsupported-step detection
+- `src/formal_math_benchmark/lean_generator.py`: Lean theorem generation for benchmark claims
+- `src/formal_math_benchmark/reporting.py`: markdown report rendering
+- `src/formal_math_benchmark/openai_runner.py`: optional OpenAI response collection adapter
+- `lean/FormalMathBenchmark/Examples.lean`: checked reference examples
+- `lean/FormalMathBenchmark/Generated.lean`: generated theorems tied to benchmark obligations
+
+## What Gets Measured
+
+The evaluator reports:
+
+- `answer_accuracy`: exact final-answer correctness
+- `claim_recall`: proportion of reference reasoning claims covered by a response
+- `verified_claim_rate`: proportion of formalizable claims recovered by the response
+- `unsupported_claims`: response steps that do not align with the benchmark’s proof skeleton
+
+This lets the benchmark separate:
+
+1. correct answer, correct reasoning
+2. correct answer, incomplete reasoning
+3. correct answer, unsupported reasoning
+4. wrong answer, partially formalizable reasoning
+
+That separation is the main research signal.
+
+## Quickstart
+
+### Python Demo
+
+```bash
+cd /path/to/formal-math-benchmark
+python3 scripts/run_demo.py
+```
+
+This will:
+
+- load the benchmark from `data/problems.json`
+- evaluate the seeded runs in `data/sample_runs.json`
+- write a markdown report to `outputs/report.md`
+- generate Lean obligations in `lean/FormalMathBenchmark/Generated.lean`
+
+### Generate README Figures
+
+```bash
+cd /path/to/formal-math-benchmark
+MPLCONFIGDIR=$PWD/.mplconfig python3 scripts/generate_readme_figures.py
+```
+
+### Lean 4 Build
+
+```bash
+cd /path/to/formal-math-benchmark/lean
+~/.elan/bin/lake build FormalMathBenchmark.Examples FormalMathBenchmark.Generated
+```
+
+## Reproducible Workflow
+
+```bash
+# 1. Run the benchmark demo
+python3 scripts/run_demo.py
+
+# 2. Run tests
+python3 -m pytest -q tests/test_evaluation.py
+
+# 3. Regenerate README figures
+MPLCONFIGDIR=$PWD/.mplconfig python3 scripts/generate_readme_figures.py
+
+# 4. Typecheck Lean modules
+cd lean
+~/.elan/bin/lake build FormalMathBenchmark.Examples FormalMathBenchmark.Generated
+```
+
+## Validation and Correctness
+
+This repo is intentionally opinionated about evaluation quality.
+
+### What Is Actually Verified
+
+- Python evaluation pipeline is covered by `tests/test_evaluation.py`
+- Lean example theorems are typechecked
+- Generated Lean benchmark theorems are typechecked
+- Sample report is produced from the same benchmark data that drives the README figures
+
+### What Is Not Claimed
+
+- full natural-language-to-Lean translation
+- end-to-end formal verification of arbitrary model-generated proofs
+- broad benchmark coverage across all olympiad domains
+
+The current system is a benchmarked proof-obligation generator and evaluator, not a general theorem-proving autopilot. That narrower claim is deliberate.
+
+## Technical Notes
+
+### Benchmark Representation
+
+Each problem contains:
+
+- natural-language prompt
+- canonical final answer
+- structured solution skeleton
+- formalizability flags
+- Lean theorem identifiers
+- match terms used for claim-level alignment
+
+This keeps the evaluation grounded in explicit reasoning targets instead of post-hoc fuzzy grading.
+
+### Lean Strategy
+
+The Lean side currently uses two modes:
+
+- hand-checked reference examples in `Examples.lean`
+- generated benchmark-specific theorems in `Generated.lean`
+
+For the seeded benchmark problems, the generator emits concrete theorem statements that compile under Lean 4. This gives the repo a real formal boundary rather than a decorative theorem-prover dependency.
+
+## Repository Structure
 
 ```text
 formal-math-benchmark/
@@ -29,6 +180,9 @@ formal-math-benchmark/
 │   ├── problems.json
 │   └── sample_runs.json
 ├── docs/
+│   ├── images/
+│   │   ├── benchmark_composition.png
+│   │   └── model_comparison.png
 │   └── methodology.md
 ├── lean/
 │   ├── FormalMathBenchmark/
@@ -38,76 +192,34 @@ formal-math-benchmark/
 │   ├── lakefile.lean
 │   └── lean-toolchain
 ├── outputs/
-│   └── .gitkeep
+│   └── report.md
 ├── scripts/
+│   ├── generate_readme_figures.py
 │   └── run_demo.py
 ├── src/
 │   └── formal_math_benchmark/
-│       ├── __init__.py
 │       ├── dataset.py
 │       ├── evaluation.py
 │       ├── lean_generator.py
 │       ├── models.py
 │       ├── openai_runner.py
 │       └── reporting.py
-└── pyproject.toml
+└── tests/
+    └── test_evaluation.py
 ```
 
-## Quick Start
+## Extension Path
 
-Run the demo evaluation:
+The next obvious upgrades are:
 
-```bash
-python3 scripts/run_demo.py
-```
-
-This will:
-
-- load the benchmark
-- evaluate two sample model runs
-- write a markdown report to `outputs/report.md`
-- generate Lean theorem stubs at `lean/FormalMathBenchmark/Generated.lean`
-
-## Lean 4 Setup
-
-Lean is not required for the Python demo, but it is required for formal proof checking.
-
-After installing Lean 4 with `elan`, you can enter the Lean project directory and build:
-
-```bash
-cd lean
-lake build
-```
-
-The generated file `FormalMathBenchmark/Generated.lean` contains theorem stubs derived from the benchmark's proof obligations.
-
-## Evaluation Outputs
-
-The Python pipeline reports:
-
-- `answer_accuracy`: exact-match final answer accuracy
-- `claim_recall`: how many required reasoning claims the model explicitly covers
-- `verified_claim_rate`: proportion of claims that are ready for formal checking
-- `unsupported_claims`: claims that do not map cleanly to the reference proof skeleton
-- `hallucinated_claims`: extra steps or lemmas unsupported by the benchmark specification
-
-This allows you to highlight cases where a model reaches the right answer by invalid reasoning.
-
-## OpenAI Integration
-
-`src/formal_math_benchmark/openai_runner.py` includes a minimal adapter for collecting model outputs from the OpenAI Responses API when the `openai` package and credentials are available. The rest of the repo runs offline without external dependencies.
-
-## Why This Project Matters
-
-This benchmark is designed to support research questions such as:
-
-- How often do models produce correct answers for invalid reasons?
-- Which math domains are easiest to formalize?
-- Which classes of model reasoning errors survive answer-only evaluation?
-- How much of a natural-language solution can be converted into proof obligations automatically?
+- more benchmark problems with harder AIME-style number theory and combinatorics
+- richer failure taxonomies beyond unsupported-claim detection
+- automatic collection of fresh model outputs through the OpenAI API
+- charts over larger evaluation runs instead of seeded snapshots
+- partial translation of natural-language intermediate claims into Lean tactics or lemma templates
 
 ## Resume Framing
 
-Formal Math Benchmark & Reasoning Evaluator | Python, Lean 4, OpenAI API
+**Formal Math Benchmark & Reasoning Evaluator** | Python, Lean 4, OpenAI API
 
 Built a benchmark of olympiad-style math problems and a verification pipeline that translated model-generated solutions into formal proof obligations in Lean 4, distinguishing correct final answers from logically valid reasoning.

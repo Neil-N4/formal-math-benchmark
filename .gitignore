@@ -1,5 +1,6 @@
 .DS_Store
 .pytest_cache/
+.mplconfig/
 __pycache__/
 *.pyc
 .lake/
