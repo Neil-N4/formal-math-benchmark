@@ -217,9 +217,3 @@ The next obvious upgrades are:
 - automatic collection of fresh model outputs through the OpenAI API
 - charts over larger evaluation runs instead of seeded snapshots
 - partial translation of natural-language intermediate claims into Lean tactics or lemma templates
-
-## Resume Framing
-
-**Formal Math Benchmark & Reasoning Evaluator** | Python, Lean 4, OpenAI API
-
-Built a benchmark of olympiad-style math problems and a verification pipeline that translated model-generated solutions into formal proof obligations in Lean 4, distinguishing correct final answers from logically valid reasoning.
