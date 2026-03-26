@@ -1,0 +1,79 @@
+[
+  {
+    "model": "gpt-4.1-mini",
+    "prompt_style": "structured_reasoning",
+    "responses": [
+      {
+        "problem_id": "algebra_linear_system",
+        "final_answer": "58",
+        "claims": [
+          "Use the identity x^2 + y^2 = (x + y)^2 - 2xy.",
+          "Substitute to get 10^2 - 2(21) = 100 - 42 = 58."
+        ]
+      },
+      {
+        "problem_id": "number_theory_divisibility",
+        "final_answer": "1",
+        "claims": [
+          "Since 6 is congruent to 1 modulo 5, each term becomes 1.",
+          "There are five terms, so the remainder is 1."
+        ]
+      },
+      {
+        "problem_id": "combinatorics_handshakes",
+        "final_answer": "28",
+        "claims": [
+          "Each handshake is an unordered pair of people.",
+          "There are C(8,2) such pairs, which equals 28."
+        ]
+      },
+      {
+        "problem_id": "geometry_triangle_angle",
+        "final_answer": "70",
+        "claims": [
+          "Triangle angles sum to 180 degrees.",
+          "So angle C is 180 - 50 - 60 = 70."
+        ]
+      }
+    ]
+  },
+  {
+    "model": "gpt-4.1",
+    "prompt_style": "proof_obligation_prompt",
+    "responses": [
+      {
+        "problem_id": "algebra_linear_system",
+        "final_answer": "58",
+        "claims": [
+          "Use x^2 + y^2 = (x + y)^2 - 2xy.",
+          "Compute (x + y)^2 = 100.",
+          "Then x^2 + y^2 = 100 - 42 = 58."
+        ]
+      },
+      {
+        "problem_id": "number_theory_divisibility",
+        "final_answer": "0",
+        "claims": [
+          "Use the finite geometric series identity to rewrite the sum as (6^5 - 1) / 5.",
+          "Reduce the expression modulo 5 to obtain remainder 0."
+        ]
+      },
+      {
+        "problem_id": "combinatorics_handshakes",
+        "final_answer": "28",
+        "claims": [
+          "Count unordered pairs among 8 people.",
+          "The result is C(8,2) = 28."
+        ]
+      },
+      {
+        "problem_id": "geometry_triangle_angle",
+        "final_answer": "70",
+        "claims": [
+          "Interior angles in a triangle sum to 180.",
+          "Hence C = 70."
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,126 @@
+[
+  {
+    "id": "algebra_linear_system",
+    "source": "Synthetic AMC-style",
+    "topic": "algebra",
+    "difficulty": "AMC 12",
+    "problem": "If x + y = 10 and xy = 21, find x^2 + y^2.",
+    "final_answer": "58",
+    "solution_skeleton": [
+      {
+        "claim_id": "c1",
+        "statement": "Use the identity x^2 + y^2 = (x + y)^2 - 2xy.",
+        "formalizable": true,
+        "lean_name": "sum_sq_identity",
+        "match_terms": ["identity", "x", "y", "2xy"]
+      },
+      {
+        "claim_id": "c2",
+        "statement": "Compute (x + y)^2 = 100.",
+        "formalizable": true,
+        "lean_name": "sum_sq_substitution",
+        "match_terms": ["10", "100", "square"]
+      },
+      {
+        "claim_id": "c3",
+        "statement": "Compute x^2 + y^2 = 100 - 42 = 58.",
+        "formalizable": true,
+        "lean_name": "algebra_linear_system_final",
+        "match_terms": ["100", "42", "58"]
+      }
+    ]
+  },
+  {
+    "id": "number_theory_divisibility",
+    "source": "Synthetic AIME-style",
+    "topic": "number theory",
+    "difficulty": "AIME I",
+    "problem": "Find the remainder when 6^4 + 6^3 + 6^2 + 6 + 1 is divided by 5.",
+    "final_answer": "0",
+    "solution_skeleton": [
+      {
+        "claim_id": "c1",
+        "statement": "Reduce 6 modulo 5 to get 1.",
+        "formalizable": true,
+        "lean_name": "mod_reduce_six",
+        "match_terms": ["6", "5", "1", "mod"]
+      },
+      {
+        "claim_id": "c2",
+        "statement": "Rewrite the expression modulo 5 as 1^4 + 1^3 + 1^2 + 1 + 1.",
+        "formalizable": true,
+        "lean_name": "mod_expression_rewrite",
+        "match_terms": ["1^4", "1^3", "1^2", "mod"]
+      },
+      {
+        "claim_id": "c3",
+        "statement": "Compute 1 + 1 + 1 + 1 + 1 = 5, and 5 mod 5 = 0.",
+        "formalizable": true,
+        "lean_name": "mod_compute_final",
+        "match_terms": ["five", "terms", "5", "0"]
+      },
+      {
+        "claim_id": "c4",
+        "statement": "Use the geometric-series formula to compute (6^5 - 1) / (6 - 1) and reduce modulo 5 to obtain remainder 0.",
+        "formalizable": true,
+        "lean_name": "geometric_series_mod",
+        "match_terms": ["geometric", "6^5", "5", "0"]
+      }
+    ]
+  },
+  {
+    "id": "combinatorics_handshakes",
+    "source": "Synthetic AMC-style",
+    "topic": "combinatorics",
+    "difficulty": "AMC 10",
+    "problem": "In a group of 8 people, every pair shakes hands exactly once. How many handshakes occur?",
+    "final_answer": "28",
+    "solution_skeleton": [
+      {
+        "claim_id": "c1",
+        "statement": "Each handshake corresponds to a unique unordered pair of people.",
+        "formalizable": true,
+        "lean_name": "handshake_pairs",
+        "match_terms": ["unordered", "pair", "handshake"]
+      },
+      {
+        "claim_id": "c2",
+        "statement": "The number of unordered pairs of 8 people is choose(8, 2).",
+        "formalizable": true,
+        "lean_name": "handshake_choose",
+        "match_terms": ["choose", "8", "2", "pairs"]
+      },
+      {
+        "claim_id": "c3",
+        "statement": "Compute choose(8, 2) = 28.",
+        "formalizable": true,
+        "lean_name": "handshake_final",
+        "match_terms": ["choose", "8", "2", "28"]
+      }
+    ]
+  },
+  {
+    "id": "geometry_triangle_angle",
+    "source": "Synthetic olympiad-style",
+    "topic": "geometry",
+    "difficulty": "AMC 12",
+    "problem": "In triangle ABC, angles A and B are 50 degrees and 60 degrees respectively. Find angle C.",
+    "final_answer": "70",
+    "solution_skeleton": [
+      {
+        "claim_id": "c1",
+        "statement": "The interior angles of a triangle sum to 180 degrees.",
+        "formalizable": true,
+        "lean_name": "triangle_angle_sum",
+        "match_terms": ["triangle", "angles", "180"]
+      },
+      {
+        "claim_id": "c2",
+        "statement": "Compute angle C = 180 - 50 - 60 = 70.",
+        "formalizable": true,
+        "lean_name": "triangle_angle_final",
+        "match_terms": ["180", "50", "60", "70"]
+      }
+    ]
+  }
+]
